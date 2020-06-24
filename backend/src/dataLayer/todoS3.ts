@@ -1,12 +1,13 @@
 import { CreateSignedURLRequest } from '../requests/CreateSignedUrlRequest';
 import * as AWS from 'aws-sdk';
+import * as AWSXRay from 'aws-xray-sdk'
 import UidHelper from "../helpers/uidHelper";
 
-
+const XAWS = AWSXRay.captureAWS(AWS)
 export default class TodoS3 {
     constructor(
         private readonly todosS3 = process.env.TODOS_S3_BUCKET,
-        private readonly s3 = new AWS.S3({ signatureVersion: 'v4'})
+        private readonly s3 = new XAWS.S3({ signatureVersion: 'v4'})
     ) {}
 
     getBucket() {
