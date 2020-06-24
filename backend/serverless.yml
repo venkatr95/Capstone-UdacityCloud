@@ -5,6 +5,7 @@ plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
   - serverless-reqvalidator-plugin
+  - serverless-plugin-tracing
 
 custom:
   documentation:
@@ -53,7 +54,12 @@ iamRoleStatements:
       - s3:PutObject
       - s3:GetObject
     Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
-
+  - Effect: "Allow" # xray permissions (required)
+    Action:
+      - "xray:PutTraceSegments"
+      - "xray:PutTelemetryRecords"
+    Resource:
+      - "*"
 
 functions:
 
@@ -135,6 +141,8 @@ functions:
   # TODO: Configure this function (UploadUrlTodos)
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
+    healthCheckFunction:
+      tracing: true # overrides provider settings (opt out)
     events:
       - http:
           method: post
@@ -151,6 +159,12 @@ functions:
           - s3:PutObject
           - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
+      - Effect: "Allow" # xray permissions (required)
+        Action:
+          - "xray:PutTraceSegments"
+          - "xray:PutTelemetryRecords"
+        Resource:
+          - "*"
 
 
 resources:
